@@ -3,6 +3,9 @@
 
 
 void setup() {
+
+Serial.begin(9600);
+  Serial.println("hogehoge");
   // put your setup code here, to run once:
     int ret = 1;
 
@@ -20,7 +23,7 @@ void setup() {
     unsigned char buf[1024];
     unsigned char diff;
 
-    mbedtls_aes_context aes_ctx;
+    mbedtls_aes_context aes_ctx,aes_ctx2;
     mbedtls_md_context_t sha_ctx;
 
 //#if defined(_WIN32_WCE)
@@ -109,6 +112,7 @@ void setup() {
                 key[keylen++] = (unsigned char) n;
                 p += 2;
             }
+
 //        }
 //        else
 //        {
@@ -162,17 +166,21 @@ void setup() {
          * Generate the initialization vector as:
          * IV = SHA-256( filesize || filename )[0..15]
          */
-        for( i = 0; i < 8; i++ )
-            buf[i] = (unsigned char)( filesize >> ( i << 3 ) );
-
-//        p = argv[2];
-
-        mbedtls_md_starts( &sha_ctx );
-        mbedtls_md_update( &sha_ctx, buf, 8 );
-//        mbedtls_md_update( &sha_ctx, (unsigned char *) p, strlen( p ) );
-        mbedtls_md_finish( &sha_ctx, digest );
-
-        memcpy( IV, digest, 16 );
+//        for( i = 0; i < 8; i++ )
+//            buf[i] = (unsigned char)( filesize >> ( i << 3 ) );
+//Serial.println("hoge");
+//
+////        p = argv[2];
+//
+//        mbedtls_md_starts( &sha_ctx );
+// Serial.println("hoge1");
+//       mbedtls_md_update( &sha_ctx, buf, 8 );
+////        mbedtls_md_update( &sha_ctx, (unsigned char *) p, strlen( p ) );
+//Serial.println("hoge2");
+//        mbedtls_md_finish( &sha_ctx, digest );
+//
+//        memcpy( IV, digest, 16 );
+//Serial.println("hoge3");
 
         /*
          * The last four bits in the IV are actually used
@@ -197,18 +205,18 @@ void setup() {
          * using the result to setup the AES context and HMAC.
          */
         memset( digest, 0,  32 );
-        memcpy( digest, IV, 16 );
-
-        for( i = 0; i < 8192; i++ )
-        {
-            mbedtls_md_starts( &sha_ctx );
-            mbedtls_md_update( &sha_ctx, digest, 32 );
-            mbedtls_md_update( &sha_ctx, key, keylen );
-            mbedtls_md_finish( &sha_ctx, digest );
-        }
+        memcpy( digest, key, keylen );
+//
+//        for( i = 0; i < 8192; i++ )
+//        {
+//            mbedtls_md_starts( &sha_ctx );
+//            mbedtls_md_update( &sha_ctx, digest, 32 );
+//            mbedtls_md_update( &sha_ctx, key, keylen );
+//            mbedtls_md_finish( &sha_ctx, digest );
+//        }
 
         mbedtls_aes_setkey_enc( &aes_ctx, digest, 256 );
-        mbedtls_md_hmac_starts( &sha_ctx, digest, 32 );
+//        mbedtls_md_hmac_starts( &sha_ctx, digest, 32 );
 
         /*
 //         * Encrypt and write the ciphertext.
@@ -227,8 +235,23 @@ void setup() {
 //            for( i = 0; i < 16; i++ )
 //                buffer[i] = (unsigned char)( buffer[i] ^ IV[i] );
             memcpy( buf, "hogefugahogefuga", 16 );
-
+//char *dat="hogefugahogefuga";
+          for (int j=0;j<16;j++){
+            Serial.println((char)buf[j]);
+          }
             mbedtls_aes_crypt_ecb( &aes_ctx, MBEDTLS_AES_ENCRYPT, buf, buf );
+            Serial.println("1");
+
+                      for (int j=0;j<16;j++){
+            Serial.println((char)buf[j]);
+          }
+          mbedtls_aes_setkey_dec( &aes_ctx2, digest, 256 );
+          mbedtls_aes_crypt_ecb( &aes_ctx2, MBEDTLS_AES_DECRYPT, buf, buf );
+            Serial.println("2");
+
+                     for (int j=0;j<16;j++){
+            Serial.println((char)buf[j]);
+          }
 //            mbedtls_md_hmac_update( &sha_ctx, buffer, 16 );
 
 //            if( fwrite( buffer, 1, 16, fout ) != 16 )
@@ -243,7 +266,7 @@ void setup() {
         /*
          * Finally write the HMAC.
          */
-        mbedtls_md_hmac_finish( &sha_ctx, digest );
+//        mbedtls_md_hmac_finish( &sha_ctx, digest );
 //
 //        if( fwrite( digest, 1, 32, fout ) != 32 )
 //        {
@@ -386,8 +409,9 @@ void setup() {
 //    memset( digest, 0, sizeof( digest ) );
 
     mbedtls_aes_free( &aes_ctx );
-    mbedtls_md_free( &sha_ctx );
-
+    mbedtls_aes_free( &aes_ctx2 );
+//    mbedtls_md_free( &sha_ctx );
+Serial.println("hogefugato");
 
 }
 
